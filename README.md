@@ -10,11 +10,6 @@ Inspired by [ceres-solver](https://github.com/ceres-solver/ceres-solver), [tiny-
 This is a general optimizer written in Rust, including bindings for Python. If you're familiar with ceres-solver or factor-graph optimizers, you'll find it very easy to use.
 
 ## Installation
-### python
-The python package can be installed directly from PyPI:
-```sh
-pip install tiny-solver
-```
 ### rust
 ```sh
 cargo add tiny-solver
@@ -23,14 +18,14 @@ cargo add tiny-solver
 ## Current Features
 
 - [x] Automatic Derivatives using [num-dual](https://github.com/itt-ustutt/num-dual)
-- [x] ~~Sparse QR~~, Sparse Cholesky using [faer](https://github.com/sarah-ek/faer-rs)
+- [x] Sparse QR, Sparse Cholesky using [faer](https://github.com/sarah-quinones/faer-rs)
 - [x] GaussNewtonOptimizer
+- [x] LevenbergMarquardtOptimizer
 - [x] Multithreading jacobian
-- [x] loss function (Huber)
-- [x] Define factor in python
+- [x] loss functions (Huber, CauchyLoss, ArctanLoss)
+- [x] Parameter on manifold (SO3, SE3)
 
 #### TODO
-- [ ] LevenbergMarquardtOptimizer
 - [ ] information matrix
 
 ## Benchmark
@@ -75,14 +70,14 @@ fn main() {
     // add residual x needs to be close to 3.0
     problem.add_residual_block(
         1,
-        &[("x", 1)],
+        &["x"],
         Box::new(tiny_solver::factors::PriorFactor {
             v: na::dvector![3.0],
         }),
         None,
     );
     // add custom residual for x and yz
-    problem.add_residual_block(2, &[("x", 1), ("yz", 2)], Box::new(CustomFactor {}), None);
+    problem.add_residual_block(2, &["x", "yz"], Box::new(CustomFactor), None);
 
     // the initial values for x is 0.7 and yz is [-30.2, 123.4]
     let initial_values = HashMap::<String, na::DVector<f64>>::from([
@@ -173,3 +168,14 @@ cargo run -r --example m3500_benchmark
 pip install tiny-solver matplotlib
 python3 examples/python/m3500.py
 ```
+### Sphere 2500 dataset
+```
+cargo run -r --example sphere2500
+```
+<img src="docs/sphere2500_rs.png" width="300" alt="sp2500 dataset rust result.">
+
+### Parking garage dataset
+```
+cargo run -r --example parking-garage
+```
+<img src="docs/parking_garage.png" width="300" alt="parking dataset rust result.">
